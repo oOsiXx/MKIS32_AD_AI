@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прогнозирование оттока клиентов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Прогнозирование оттока клиентов</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="file">Загрузите CSV файл с данными клиентов (19 чисел в каждой строке):</label>
+                <input type="file" id="file" name="file" accept=".csv">
+            </div>
+            <button type="submit">Получить прогноз</button>
+        </form>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('file', document.getElementById('file').files[0]);
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                let resultText = 'Вероятности для каждого клиента:\n';
+                data.probabilities.forEach((prob, index) => {
+                    resultText += `Клиент ${index + 1}: ${prob.join(', ')}\n`;
+                });
+                document.getElementById('result').innerText = resultText;
+            } else {
+                document.getElementById('result').innerText = `Ошибка: ${data.error}`;
+            }
+        });
+    </script>
+</body>
+</html>
